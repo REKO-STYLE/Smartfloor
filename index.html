@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>SmartFloor — Camina y genera electricidad</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F4F8FA; --panel:#FFFFFF; --ink:#132430; --muted:#5E7080;
+  --teal:#1E9C82; --amber:#E8A23D; --line:#DCE6EA; --teal-soft:#DEF3EC; --amber-soft:#FBEBD3;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0F1B22; --panel:#16262E; --ink:#EAF2F4; --muted:#93A7AF;
+    --teal:#34C79E; --amber:#F0B563; --line:#233A44; --teal-soft:#183530; --amber-soft:#3A2E1B;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0F1B22; --panel:#16262E; --ink:#EAF2F4; --muted:#93A7AF;
+  --teal:#34C79E; --amber:#F0B563; --line:#233A44; --teal-soft:#183530; --amber-soft:#3A2E1B;
+}
+*{box-sizing:border-box;}
+html{scroll-padding-top:env(safe-area-inset-top,0px);}
+body{
+  margin:0;background:var(--bg);color:var(--ink);
+  font-family:'Inter',sans-serif;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+h1,h2,h3,.disp{font-family:'Space Grotesk',sans-serif;}
+.wrap{max-width:900px;margin:0 auto;padding:40px 22px 70px;}
+
+.hero{text-align:center;padding:20px 0 34px;}
+.hero .kicker{color:var(--teal);font-weight:600;font-size:14px;margin-bottom:10px;}
+.hero h1{font-size:clamp(28px,5vw,44px);line-height:1.15;margin:0 0 16px;font-weight:700;}
+.hero p{color:var(--muted);max-width:52ch;margin:0 auto;font-size:16px;line-height:1.65;}
+
+.floor-scene{
+  margin:34px auto 10px;max-width:520px;background:var(--panel);border:1px solid var(--line);
+  border-radius:20px;padding:26px 20px 22px;text-align:center;
+}
+.floor-scene svg{width:100%;max-width:360px;height:auto;}
+.tap-btn{
+  margin-top:14px;background:var(--teal);color:#fff;border:none;border-radius:999px;
+  padding:13px 26px;font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:15px;
+  cursor:pointer;transition:transform .15s ease;
+}
+.tap-btn:active{transform:scale(.96);}
+.counter{margin-top:12px;color:var(--muted);font-size:14px;}
+.counter b{color:var(--ink);font-family:'Space Grotesk',sans-serif;}
+
+section{margin-top:56px;}
+.section-head{text-align:center;margin-bottom:28px;}
+.section-head h2{font-size:clamp(22px,3.4vw,28px);margin:0 0 10px;font-weight:600;}
+.section-head p{color:var(--muted);max-width:56ch;margin:0 auto;font-size:15px;line-height:1.6;}
+
+.steps{display:grid;gap:16px;}
+.step{
+  display:grid;grid-template-columns:52px 1fr;gap:16px;align-items:start;
+  background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px 20px;
+}
+.step .icon{
+  width:52px;height:52px;border-radius:12px;background:var(--teal-soft);
+  display:flex;align-items:center;justify-content:center;
+}
+.step .icon svg{width:26px;height:26px;}
+.step h3{margin:2px 0 6px;font-size:16px;font-weight:600;}
+.step p{margin:0;color:var(--muted);font-size:14.5px;line-height:1.55;}
+
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;}
+@media (max-width:700px){.stats{grid-template-columns:repeat(2,1fr);}}
+.stat{
+  background:var(--panel);border:1px solid var(--line);border-radius:14px;
+  padding:20px 16px;text-align:center;
+}
+.stat .num{font-family:'Space Grotesk',sans-serif;font-size:26px;font-weight:700;color:var(--teal);}
+.stat .label{font-size:12.5px;color:var(--muted);margin-top:6px;line-height:1.4;}
+
+.why{
+  background:var(--amber-soft);border:1px solid var(--line);border-radius:16px;padding:22px 24px;
+  display:grid;grid-template-columns:auto 1fr;gap:16px;align-items:flex-start;
+}
+.why .icon{font-size:22px;}
+.why p{margin:0;color:var(--ink);font-size:14.5px;line-height:1.65;}
+.why b{color:var(--ink);}
+
+footer{margin-top:56px;text-align:center;color:var(--muted);font-size:12.5px;line-height:1.7;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="hero">
+    <div class="kicker">Proyecto SmartFloor · UTP</div>
+    <h1>Cada paso puede generar electricidad</h1>
+    <p>Un piso especial aprovecha el movimiento de las personas al caminar para producir energía eléctrica, sin usar cables ni baterías externas.</p>
+  </div>
+
+  <div class="floor-scene">
+    <svg id="scene" viewBox="0 0 300 200" xmlns="http://www.w3.org/2000/svg">
+      <rect x="20" y="150" width="260" height="18" rx="4" fill="var(--line)"/>
+      <rect id="tile" x="90" y="140" width="120" height="16" rx="4" fill="var(--teal-soft)" stroke="var(--teal)" stroke-width="1.5"/>
+      <g id="footIcon" transform="translate(150,90)">
+        <path d="M-12,-20 q12,-10 24,0 q6,10 -2,26 q-4,10 2,18 q2,6 -6,8 q-10,2 -14,-6 q-6,-10 -2,-20 q-6,-14 -2,-26 Z" fill="var(--amber)"/>
+      </g>
+      <g id="sparks" opacity="0">
+        <circle cx="150" cy="130" r="3" fill="var(--teal)"/>
+        <circle cx="165" cy="135" r="2.4" fill="var(--teal)"/>
+        <circle cx="135" cy="135" r="2.4" fill="var(--teal)"/>
+      </g>
+      <circle id="bulb" cx="150" cy="60" r="14" fill="var(--line)" stroke="var(--muted)" stroke-width="1.5"/>
+      <line x1="150" y1="74" x2="150" y2="140" stroke="var(--muted)" stroke-width="1.5" stroke-dasharray="3 3"/>
+    </svg>
+    <button class="tap-btn" id="stepBtn">Simular una pisada</button>
+    <div class="counter">Pasos: <b id="stepCount">0</b> &nbsp;·&nbsp; Energía acumulada: <b id="energyCount">0</b> mJ</div>
+  </div>
+
+  <section>
+    <div class="section-head">
+      <h2>¿Cómo funciona?</h2>
+      <p>El sistema convierte el movimiento del paso en electricidad en cuatro etapas sencillas.</p>
+    </div>
+    <div class="steps">
+      <div class="step">
+        <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="var(--teal)" stroke-width="2" stroke-linecap="round"><path d="M4 20c2-6 2-10 6-10s3 6 6 6 2-8 4-12"/></svg></div>
+        <div><h3>1. Pisas el piso</h3><p>Tu peso presiona una pequeña losa que baja apenas unos milímetros al caminar.</p></div>
+      </div>
+      <div class="step">
+        <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="var(--teal)" stroke-width="2" stroke-linecap="round"><circle cx="9" cy="12" r="3"/><circle cx="17" cy="12" r="5"/></svg></div>
+        <div><h3>2. Un engranaje amplifica el movimiento</h3><p>Un mecanismo de cremallera-piñón convierte ese pequeño descenso en muchas vueltas rápidas.</p></div>
+      </div>
+      <div class="step">
+        <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="var(--teal)" stroke-width="2" stroke-linecap="round"><rect x="4" y="9" width="16" height="6" rx="1"/><path d="M8 9V6M16 9V6M8 18v-3M16 18v-3"/></svg></div>
+        <div><h3>3. Un imán se mueve dentro de una bobina</h3><p>El giro mueve un imán a través de una bobina de alambre de cobre, muy cerca y muy rápido.</p></div>
+      </div>
+      <div class="step">
+        <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="var(--teal)" stroke-width="2" stroke-linecap="round"><path d="M13 2L4 14h7l-1 8 10-13h-7l1-7z"/></svg></div>
+        <div><h3>4. Se genera electricidad</h3><p>Ese movimiento induce una corriente eléctrica, capaz de encender un LED o cargar un pequeño sensor.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <h2>Lo que se espera del prototipo</h2>
+      <p>Estimaciones teóricas para una losa de laboratorio de 30×30 cm, antes de las pruebas físicas.</p>
+    </div>
+    <div class="stats">
+      <div class="stat"><div class="num">≈3 V</div><div class="label">de voltaje generado por cada pisada</div></div>
+      <div class="stat"><div class="num">≈0.45 W</div><div class="label">de potencia eléctrica promedio</div></div>
+      <div class="stat"><div class="num">≈1.3%</div><div class="label">de la energía del paso se convierte en electricidad</div></div>
+      <div class="stat"><div class="num">≈0.09 J</div><div class="label">de energía generada por cada paso</div></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="why">
+      <div class="icon">💡</div>
+      <p><b>¿Por qué importa?</b> En lugares muy transitados —estaciones, centros comerciales, campus— miles de pisadas se pierden como energía desaprovechada. Aunque la eficiencia hoy es baja, este piso podría alimentar luces LED o sensores sin necesidad de cableado, usando algo que ya ocurre: caminar.</p>
+    </div>
+  </section>
+
+  <footer>
+    Basado en el avance de proyecto "Diseño de un piso generador de energía mediante inducción electromagnética (Smart Floor)", UTP.<br>
+    Próxima fase: construir el prototipo físico y medir voltaje, corriente y potencia reales por pisada.
+  </footer>
+</div>
+
+<script>
+let steps=0, energy=0;
+const tile=document.getElementById('tile');
+const foot=document.getElementById('footIcon');
+const bulb=document.getElementById('bulb');
+const sparks=document.getElementById('sparks');
+const stepCount=document.getElementById('stepCount');
+const energyCount=document.getElementById('energyCount');
+
+document.getElementById('stepBtn').addEventListener('click', ()=>{
+  steps++; energy+=90; // ~0.09 J = 90 mJ por paso
+  stepCount.textContent=steps;
+  energyCount.textContent=energy;
+
+  foot.style.transition='transform .12s ease';
+  foot.style.transform='translate(150px,90px) scale(0.85)';
+  tile.style.transition='fill .12s ease';
+  tile.style.fill='var(--teal)';
+  bulb.style.transition='fill .15s ease, filter .15s ease';
+  bulb.style.fill='var(--amber)';
+  bulb.style.filter='drop-shadow(0 0 6px var(--amber))';
+  sparks.style.transition='opacity .15s ease';
+  sparks.style.opacity='1';
+
+  setTimeout(()=>{
+    foot.style.transform='translate(150px,90px) scale(1)';
+    tile.style.fill='var(--teal-soft)';
+    bulb.style.fill='var(--line)';
+    bulb.style.filter='none';
+    sparks.style.opacity='0';
+  }, 260);
+});
+</script>
+</body>
+</html>
